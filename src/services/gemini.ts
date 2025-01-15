@@ -1,35 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { toast } from "@/components/ui/use-toast";
 
-const GEMINI_KEY_STORAGE = 'GEMINI_API_KEY';
-
-export const getStoredGeminiKey = () => {
-  return localStorage.getItem(GEMINI_KEY_STORAGE);
-};
-
-export const setGeminiKey = (key: string) => {
-  localStorage.setItem(GEMINI_KEY_STORAGE, key);
-};
-
-export const clearGeminiKey = () => {
-  localStorage.removeItem(GEMINI_KEY_STORAGE);
-};
-
 export async function getFundamentalAnalysis(symbol: string) {
   try {
-    const apiKey = getStoredGeminiKey();
-    
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your Gemini API key in the settings to access fundamental analysis.",
-        variant: "destructive"
-      });
-      return null;
-    }
-
-    console.log('Initializing Gemini API with key');
-    const genAI = new GoogleGenerativeAI(apiKey);
+    console.log('Starting fundamental analysis for:', symbol);
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `Provide a fundamental analysis for ${symbol} including:
@@ -51,7 +26,7 @@ export async function getFundamentalAnalysis(symbol: string) {
     console.error('Error getting fundamental analysis:', error);
     toast({
       title: "Analysis Error",
-      description: "Failed to fetch fundamental analysis. Please check your API key and try again.",
+      description: "Failed to fetch fundamental analysis. Please try again later.",
       variant: "destructive"
     });
     return null;
