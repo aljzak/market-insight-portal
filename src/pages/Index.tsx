@@ -1,11 +1,69 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import React, { useState } from 'react';
+import SymbolSearch from '@/components/SymbolSearch';
+import TimeframeSelector from '@/components/TimeframeSelector';
+import PriceChart from '@/components/PriceChart';
+import TechnicalIndicators from '@/components/TechnicalIndicators';
+import { useToast } from "@/components/ui/use-toast";
+
+// Mock data - replace with actual API calls
+const mockChartData = {
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+  prices: [30000, 32000, 31000, 33000, 32500, 34000],
+};
+
+const mockIndicators = [
+  { name: 'RSI', value: 65.5, signal: 'buy' },
+  { name: 'MACD', value: 245.3, signal: 'buy' },
+  { name: 'MA Cross', value: 0, signal: 'neutral' },
+  { name: 'Stochastic', value: 80.2, signal: 'sell' },
+  { name: 'ADX', value: 32.1, signal: 'buy' },
+  { name: 'ATR', value: 1250.4, signal: 'neutral' },
+];
 
 const Index = () => {
+  const [symbol, setSymbol] = useState('BTCUSDT');
+  const [timeframe, setTimeframe] = useState('1d');
+  const { toast } = useToast();
+
+  const handleSearch = (newSymbol: string) => {
+    setSymbol(newSymbol);
+    toast({
+      title: "Symbol Updated",
+      description: `Now showing data for ${newSymbol}`,
+    });
+  };
+
+  const handleTimeframeChange = (newTimeframe: string) => {
+    setTimeframe(newTimeframe);
+    toast({
+      title: "Timeframe Updated",
+      description: `Switched to ${newTimeframe.toUpperCase()} timeframe`,
+    });
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <SymbolSearch onSearch={handleSearch} />
+          <TimeframeSelector
+            selectedTimeframe={timeframe}
+            onTimeframeChange={handleTimeframeChange}
+          />
+        </div>
+
+        <div className="grid gap-6">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">{symbol}</h2>
+            <p className="text-muted-foreground">
+              Technical Analysis - {timeframe.toUpperCase()} Timeframe
+            </p>
+          </div>
+
+          <PriceChart data={mockChartData} />
+          
+          <TechnicalIndicators indicators={mockIndicators} />
+        </div>
       </div>
     </div>
   );
