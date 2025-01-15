@@ -12,12 +12,12 @@ const mockChartData = {
 };
 
 const mockIndicators = [
-  { name: 'RSI', value: 65.5, signal: 'buy' },
-  { name: 'MACD', value: 245.3, signal: 'buy' },
-  { name: 'MA Cross', value: 0, signal: 'neutral' },
-  { name: 'Stochastic', value: 80.2, signal: 'sell' },
-  { name: 'ADX', value: 32.1, signal: 'buy' },
-  { name: 'ATR', value: 1250.4, signal: 'neutral' },
+  { name: 'RSI', value: 65.5, signal: 'buy' as const },
+  { name: 'MACD', value: 245.3, signal: 'buy' as const },
+  { name: 'MA Cross', value: 0, signal: 'neutral' as const },
+  { name: 'Stochastic', value: 80.2, signal: 'sell' as const },
+  { name: 'ADX', value: 32.1, signal: 'buy' as const },
+  { name: 'ATR', value: 1250.4, signal: 'neutral' as const },
 ];
 
 const Index = () => {
