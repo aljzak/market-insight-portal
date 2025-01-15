@@ -4,8 +4,9 @@ import TimeframeSelector from '@/components/TimeframeSelector';
 import PriceChart from '@/components/PriceChart';
 import AnalysisGauge from '@/components/AnalysisGauge';
 import AnalysisTable from '@/components/AnalysisTable';
+import ApiKeySettings from '@/components/ApiKeySettings';
 import { useToast } from "@/components/ui/use-toast";
-import { getFundamentalAnalysis } from '@/services/gemini';
+import { getFundamentalAnalysis, getStoredGeminiKey } from '@/services/gemini';
 
 // Mock data - replace with actual API calls
 const mockChartData = {
@@ -39,9 +40,11 @@ const Index = () => {
 
   useEffect(() => {
     const fetchFundamentalData = async () => {
-      const data = await getFundamentalAnalysis(symbol);
-      if (data) {
-        setFundamentalData(data);
+      if (getStoredGeminiKey()) {
+        const data = await getFundamentalAnalysis(symbol);
+        if (data) {
+          setFundamentalData(data);
+        }
       }
     };
 
@@ -92,6 +95,8 @@ const Index = () => {
             onTimeframeChange={handleTimeframeChange}
           />
         </div>
+
+        <ApiKeySettings />
 
         <div className="grid gap-6">
           <div className="space-y-2">
