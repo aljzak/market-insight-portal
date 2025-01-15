@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SymbolSearch from '@/components/SymbolSearch';
 import TimeframeSelector from '@/components/TimeframeSelector';
 import PriceChart from '@/components/PriceChart';
-import TechnicalIndicators from '@/components/TechnicalIndicators';
+import AnalysisGauge from '@/components/AnalysisGauge';
+import AnalysisTable from '@/components/AnalysisTable';
 import { useToast } from "@/components/ui/use-toast";
+import { getFundamentalAnalysis } from '@/services/gemini';
 
 // Mock data - replace with actual API calls
 const mockChartData = {
@@ -20,10 +22,31 @@ const mockIndicators = [
   { name: 'ATR', value: 1250.4, signal: 'neutral' as const },
 ];
 
+const mockMovingAverages = [
+  { name: 'SMA 10', value: 32150.5, signal: 'buy' as const },
+  { name: 'EMA 20', value: 31980.3, signal: 'buy' as const },
+  { name: 'SMA 30', value: 31750.0, signal: 'neutral' as const },
+  { name: 'EMA 50', value: 31500.2, signal: 'sell' as const },
+  { name: 'SMA 100', value: 31200.1, signal: 'sell' as const },
+  { name: 'EMA 200', value: 30950.4, signal: 'neutral' as const },
+];
+
 const Index = () => {
   const [symbol, setSymbol] = useState('BTCUSDT');
   const [timeframe, setTimeframe] = useState('1d');
+  const [fundamentalData, setFundamentalData] = useState<any>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchFundamentalData = async () => {
+      const data = await getFundamentalAnalysis(symbol);
+      if (data) {
+        setFundamentalData(data);
+      }
+    };
+
+    fetchFundamentalData();
+  }, [symbol]);
 
   const handleSearch = (newSymbol: string) => {
     setSymbol(newSymbol);
@@ -40,6 +63,24 @@ const Index = () => {
       description: `Switched to ${newTimeframe.toUpperCase()} timeframe`,
     });
   };
+
+  // Calculate summary metrics
+  const calculateSummary = (indicators: typeof mockIndicators) => {
+    const buys = indicators.filter(i => i.signal === 'buy').length;
+    const sells = indicators.filter(i => i.signal === 'sell').length;
+    const neutrals = indicators.filter(i => i.signal === 'neutral').length;
+    
+    let signal: 'Strong Sell' | 'Sell' | 'Neutral' | 'Buy' | 'Strong Buy' = 'Neutral';
+    if (buys > sells + neutrals) signal = 'Strong Buy';
+    else if (buys > sells) signal = 'Buy';
+    else if (sells > buys + neutrals) signal = 'Strong Sell';
+    else if (sells > buys) signal = 'Sell';
+
+    return { buys, sells, neutrals, signal };
+  };
+
+  const oscillatorsSummary = calculateSummary(mockIndicators);
+  const masSummary = calculateSummary(mockMovingAverages);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -62,7 +103,49 @@ const Index = () => {
 
           <PriceChart data={mockChartData} />
           
-          <TechnicalIndicators indicators={mockIndicators} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <AnalysisGauge
+              title="Oscillators"
+              value={oscillatorsSummary.buys}
+              total={mockIndicators.length}
+              buys={oscillatorsSummary.buys}
+              sells={oscillatorsSummary.sells}
+              neutrals={oscillatorsSummary.neutrals}
+              signal={oscillatorsSummary.signal}
+            />
+            <AnalysisGauge
+              title="Moving Averages"
+              value={masSummary.buys}
+              total={mockMovingAverages.length}
+              buys={masSummary.buys}
+              sells={masSummary.sells}
+              neutrals={masSummary.neutrals}
+              signal={masSummary.signal}
+            />
+            <AnalysisGauge
+              title="Summary"
+              value={(oscillatorsSummary.buys + masSummary.buys)}
+              total={mockIndicators.length + mockMovingAverages.length}
+              buys={oscillatorsSummary.buys + masSummary.buys}
+              sells={oscillatorsSummary.sells + masSummary.sells}
+              neutrals={oscillatorsSummary.neutrals + masSummary.neutrals}
+              signal={oscillatorsSummary.signal}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AnalysisTable title="Oscillators" items={mockIndicators} />
+            <AnalysisTable title="Moving Averages" items={mockMovingAverages} />
+          </div>
+
+          {fundamentalData && (
+            <div className="rounded-lg border bg-card p-6">
+              <h3 className="text-xl font-semibold mb-4">Fundamental Analysis</h3>
+              <pre className="whitespace-pre-wrap">
+                {JSON.stringify(fundamentalData, null, 2)}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
     </div>
