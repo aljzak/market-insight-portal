@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +6,19 @@ import { getStoredGeminiKey, setGeminiKey, clearGeminiKey } from '@/services/gem
 import { toast } from "@/components/ui/use-toast";
 
 const ApiKeySettings = () => {
-  const [apiKey, setApiKey] = useState(getStoredGeminiKey() || '');
+  const [apiKey, setApiKey] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      const key = await getStoredGeminiKey();
+      if (key) {
+        setApiKey(key);
+      }
+      setLoading(false);
+    };
+    fetchApiKey();
+  }, []);
 
   const handleSave = () => {
     if (apiKey.trim()) {
@@ -26,6 +38,10 @@ const ApiKeySettings = () => {
       description: "Your Gemini API key has been removed.",
     });
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Card className="w-full">

@@ -1,10 +1,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const GEMINI_KEY_STORAGE = 'gemini_api_key';
 
-export const getStoredGeminiKey = (): string | null => {
-  return localStorage.getItem(GEMINI_KEY_STORAGE);
+export const getStoredGeminiKey = async (): Promise<string | null> => {
+  const { data, error } = await supabase.functions.invoke('get-gemini-key');
+  if (error) {
+    console.error('Error fetching Gemini key:', error);
+    return null;
+  }
+  return data?.key || null;
 };
 
 export const setGeminiKey = (key: string): void => {
@@ -18,7 +24,7 @@ export const clearGeminiKey = (): void => {
 export async function getFundamentalAnalysis(symbol: string) {
   try {
     console.log('Starting fundamental analysis for:', symbol);
-    const apiKey = getStoredGeminiKey();
+    const apiKey = await getStoredGeminiKey();
     
     if (!apiKey) {
       console.log('No API key found');
@@ -30,6 +36,7 @@ export async function getFundamentalAnalysis(symbol: string) {
       return null;
     }
 
+    console.log('Received API key, initializing Gemini');
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
