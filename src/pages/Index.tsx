@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import SymbolSearch from '@/components/SymbolSearch';
 import TimeframeSelector from '@/components/TimeframeSelector';
 import PriceChart from '@/components/PriceChart';
@@ -6,51 +7,31 @@ import AnalysisGauge from '@/components/AnalysisGauge';
 import AnalysisTable from '@/components/AnalysisTable';
 import TechnicalIndicators from '@/components/TechnicalIndicators';
 import { getFundamentalAnalysis } from '@/services/gemini';
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-// Mock data for initial development
-const mockChartData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-  prices: [30000, 32000, 31000, 33000, 32500, 34000],
-};
-
-const mockIndicators = [
-  { name: 'RSI', value: 65.5, signal: 'buy' as const },
-  { name: 'MACD', value: 245.3, signal: 'buy' as const },
-  { name: 'MA Cross', value: 0, signal: 'neutral' as const },
-  { name: 'Stochastic', value: 80.2, signal: 'sell' as const },
-  { name: 'ADX', value: 32.1, signal: 'buy' as const },
-  { name: 'ATR', value: 1250.4, signal: 'neutral' as const },
-];
-
-const mockMovingAverages = [
-  { name: 'SMA 10', value: 32150.5, signal: 'buy' as const },
-  { name: 'EMA 20', value: 31980.3, signal: 'buy' as const },
-  { name: 'SMA 30', value: 31750.0, signal: 'neutral' as const },
-  { name: 'EMA 50', value: 31500.2, signal: 'sell' as const },
-  { name: 'SMA 100', value: 31200.1, signal: 'sell' as const },
-  { name: 'EMA 200', value: 30950.4, signal: 'neutral' as const },
-];
 
 const Index = () => {
   const [symbol, setSymbol] = useState('BTCUSDT');
   const [timeframe, setTimeframe] = useState('1d');
-  const [fundamentalData, setFundamentalData] = useState<any>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchFundamentalData = async () => {
-      console.log('Fetching fundamental data for:', symbol);
-      const data = await getFundamentalAnalysis(symbol);
-      if (data) {
-        console.log('Received fundamental data:', data);
-        setFundamentalData(data);
-      }
-    };
+  const { data: technicalData, isLoading: isTechnicalLoading } = useQuery({
+    queryKey: ['technical', symbol, timeframe],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('scrape-tradingview', {
+        body: { symbol, timeframe }
+      });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
-    fetchFundamentalData();
-  }, [symbol]);
+  const { data: fundamentalData, isLoading: isFundamentalLoading } = useQuery({
+    queryKey: ['fundamental', symbol],
+    queryFn: () => getFundamentalAnalysis(symbol)
+  });
 
   const handleSearch = (newSymbol: string) => {
     setSymbol(newSymbol);
@@ -68,23 +49,13 @@ const Index = () => {
     });
   };
 
-  // Calculate summary metrics
-  const calculateSummary = (indicators: typeof mockIndicators) => {
-    const buys = indicators.filter(i => i.signal === 'buy').length;
-    const sells = indicators.filter(i => i.signal === 'sell').length;
-    const neutrals = indicators.filter(i => i.signal === 'neutral').length;
-    
-    let signal: 'Strong Sell' | 'Sell' | 'Neutral' | 'Buy' | 'Strong Buy' = 'Neutral';
-    if (buys > sells + neutrals) signal = 'Strong Buy';
-    else if (buys > sells) signal = 'Buy';
-    else if (sells > buys + neutrals) signal = 'Strong Sell';
-    else if (sells > buys) signal = 'Sell';
-
-    return { buys, sells, neutrals, signal };
-  };
-
-  const oscillatorsSummary = calculateSummary(mockIndicators);
-  const masSummary = calculateSummary(mockMovingAverages);
+  if (isTechnicalLoading || isFundamentalLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-lg">Loading analysis...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -105,45 +76,77 @@ const Index = () => {
             </p>
           </div>
 
-          <PriceChart data={mockChartData} />
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <AnalysisGauge
-              title="Oscillators"
-              value={oscillatorsSummary.buys}
-              total={mockIndicators.length}
-              buys={oscillatorsSummary.buys}
-              sells={oscillatorsSummary.sells}
-              neutrals={oscillatorsSummary.neutrals}
-              signal={oscillatorsSummary.signal}
-            />
-            <AnalysisGauge
-              title="Moving Averages"
-              value={masSummary.buys}
-              total={mockMovingAverages.length}
-              buys={masSummary.buys}
-              sells={masSummary.sells}
-              neutrals={masSummary.neutrals}
-              signal={masSummary.signal}
-            />
-            <AnalysisGauge
-              title="Summary"
-              value={(oscillatorsSummary.buys + masSummary.buys)}
-              total={mockIndicators.length + mockMovingAverages.length}
-              buys={oscillatorsSummary.buys + masSummary.buys}
-              sells={oscillatorsSummary.sells + masSummary.sells}
-              neutrals={oscillatorsSummary.neutrals + masSummary.neutrals}
-              signal={oscillatorsSummary.signal}
-            />
-          </div>
+          {technicalData && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <AnalysisGauge
+                  title="Oscillators"
+                  value={technicalData.oscillators.buy}
+                  total={technicalData.oscillators.buy + technicalData.oscillators.sell + technicalData.oscillators.neutral}
+                  buys={technicalData.oscillators.buy}
+                  sells={technicalData.oscillators.sell}
+                  neutrals={technicalData.oscillators.neutral}
+                  signal={technicalData.oscillators.signal as any}
+                />
+                <AnalysisGauge
+                  title="Moving Averages"
+                  value={technicalData.movingAverages.buy}
+                  total={technicalData.movingAverages.buy + technicalData.movingAverages.sell + technicalData.movingAverages.neutral}
+                  buys={technicalData.movingAverages.buy}
+                  sells={technicalData.movingAverages.sell}
+                  neutrals={technicalData.movingAverages.neutral}
+                  signal={technicalData.movingAverages.signal as any}
+                />
+                <AnalysisGauge
+                  title="Summary"
+                  value={technicalData.summary.buy}
+                  total={technicalData.summary.buy + technicalData.summary.sell + technicalData.summary.neutral}
+                  buys={technicalData.summary.buy}
+                  sells={technicalData.summary.sell}
+                  neutrals={technicalData.summary.neutral}
+                  signal={technicalData.summary.signal as any}
+                />
+              </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AnalysisTable title="Oscillators" items={mockIndicators} />
-            <AnalysisTable title="Moving Averages" items={mockMovingAverages} />
-          </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <AnalysisTable 
+                  title="Oscillators" 
+                  items={[
+                    // We'll need to update this with actual data from the scraping
+                    { name: 'RSI (14)', value: 0, signal: 'neutral' as const },
+                    { name: 'Stochastic %K (14, 3, 3)', value: 0, signal: 'neutral' as const },
+                    { name: 'CCI (20)', value: 0, signal: 'neutral' as const },
+                    { name: 'ADX (14)', value: 0, signal: 'neutral' as const },
+                    { name: 'AO', value: 0, signal: 'neutral' as const },
+                    { name: 'Momentum (10)', value: 0, signal: 'neutral' as const },
+                    { name: 'MACD Level (12, 26)', value: 0, signal: 'neutral' as const },
+                    { name: 'Stochastic RSI Fast (3, 3, 14, 14)', value: 0, signal: 'neutral' as const },
+                    { name: 'Williams %R (14)', value: 0, signal: 'neutral' as const },
+                    { name: 'Bull Bear Power', value: 0, signal: 'neutral' as const }
+                  ]} 
+                />
+                <AnalysisTable 
+                  title="Moving Averages" 
+                  items={[
+                    // We'll need to update this with actual data from the scraping
+                    { name: 'EMA 10', value: 0, signal: 'neutral' as const },
+                    { name: 'SMA 10', value: 0, signal: 'neutral' as const },
+                    { name: 'EMA 20', value: 0, signal: 'neutral' as const },
+                    { name: 'SMA 20', value: 0, signal: 'neutral' as const },
+                    { name: 'EMA 30', value: 0, signal: 'neutral' as const },
+                    { name: 'SMA 30', value: 0, signal: 'neutral' as const },
+                    { name: 'EMA 50', value: 0, signal: 'neutral' as const },
+                    { name: 'SMA 50', value: 0, signal: 'neutral' as const },
+                    { name: 'EMA 100', value: 0, signal: 'neutral' as const },
+                    { name: 'SMA 100', value: 0, signal: 'neutral' as const }
+                  ]} 
+                />
+              </div>
+            </>
+          )}
 
           {fundamentalData && (
-            <Card className="w-full">
+            <Card className="w-full bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <CardHeader>
                 <CardTitle>Fundamental Analysis</CardTitle>
               </CardHeader>
