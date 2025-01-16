@@ -40,13 +40,16 @@ export async function getFundamentalAnalysis(symbol: string) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `Provide a fundamental analysis for ${symbol} including:
-    1. Market Cap
-    2. P/E Ratio
-    3. Revenue Growth
-    4. Key Metrics
-    5. Recent News Impact
-    Format the response as JSON.`;
+    const prompt = `Analyze the fundamental metrics for ${symbol} and provide a JSON response with the following structure, no markdown formatting:
+    {
+      "market_cap": "Value with unit",
+      "pe_ratio": "Numeric value or N/A",
+      "revenue_growth": "Percentage with trend",
+      "trading_volume": "24h volume with unit",
+      "market_sentiment": "Bullish/Bearish/Neutral with brief reason",
+      "risk_level": "Low/Medium/High with brief explanation"
+    }
+    Important: Return ONLY the JSON object, no markdown formatting or additional text.`;
 
     console.log('Sending request to Gemini API');
     const result = await model.generateContent(prompt);
@@ -54,7 +57,10 @@ export async function getFundamentalAnalysis(symbol: string) {
     const text = response.text();
     
     console.log('Successfully received Gemini API response');
-    return JSON.parse(text);
+    
+    // Remove any potential markdown formatting or extra text
+    const jsonStr = text.replace(/```json|```|`/g, '').trim();
+    return JSON.parse(jsonStr);
   } catch (error) {
     console.error('Error getting fundamental analysis:', error);
     toast({
