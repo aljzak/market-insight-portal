@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -30,32 +29,62 @@ serve(async (req) => {
     // Function to parse indicator data
     const parseIndicators = (section: string) => {
       const indicators = [];
-      const table = $(`div:contains("${section}")`).next('table');
+      console.log(`Parsing ${section} section`);
       
-      table.find('tr').each((_, row) => {
-        const name = $(row).find('td:first-child').text().trim();
-        const valueText = $(row).find('td:nth-child(2)').text().trim();
-        const value = parseFloat(valueText) || 0;
-        const signal = $(row).find('td:last-child').text().toLowerCase().trim();
+      // Find all tables and iterate through them to find the one containing our data
+      $('table').each((_, table) => {
+        const tableHtml = $(table).html();
+        console.log(`Found table: ${tableHtml?.substring(0, 100)}...`);
         
-        if (name && (signal === 'buy' || signal === 'sell' || signal === 'neutral')) {
-          indicators.push({ name, value, signal });
+        // Check if this table contains our section
+        const headerText = $(table).prev('div').text();
+        if (headerText.includes(section)) {
+          $(table).find('tr').each((_, row) => {
+            const name = $(row).find('td:first-child').text().trim();
+            const valueText = $(row).find('td:nth-child(2)').text().trim();
+            const value = parseFloat(valueText) || 0;
+            const signalText = $(row).find('td:last-child').text().toLowerCase().trim();
+            
+            // Map TradingView's signal text to our expected values
+            let signal = 'neutral';
+            if (signalText.includes('buy') || signalText.includes('strong buy')) signal = 'buy';
+            if (signalText.includes('sell') || signalText.includes('strong sell')) signal = 'sell';
+            
+            if (name && value !== undefined) {
+              console.log(`Found indicator: ${name}, value: ${value}, signal: ${signal}`);
+              indicators.push({ name, value, signal });
+            }
+          });
         }
       });
+      
+      console.log(`Found ${indicators.length} indicators for ${section}`);
       return indicators;
     };
 
     // Get counts for each section
     const getCounts = (section: string) => {
-      const table = $(`div:contains("${section}")`).next('table');
-      const buy = table.find('.buy, .strongBuy').length;
-      const sell = table.find('.sell, .strongSell').length;
-      const neutral = table.find('.neutral').length;
+      let buy = 0;
+      let sell = 0;
+      let neutral = 0;
+      
+      $('table').each((_, table) => {
+        const headerText = $(table).prev('div').text();
+        if (headerText.includes(section)) {
+          $(table).find('tr').each((_, row) => {
+            const signalText = $(row).find('td:last-child').text().toLowerCase().trim();
+            if (signalText.includes('buy') || signalText.includes('strong buy')) buy++;
+            else if (signalText.includes('sell') || signalText.includes('strong sell')) sell++;
+            else neutral++;
+          });
+        }
+      });
       
       let signal = 'neutral';
       if (buy > sell && buy > neutral) signal = 'buy';
       if (sell > buy && sell > neutral) signal = 'sell';
 
+      console.log(`${section} counts - Buy: ${buy}, Sell: ${sell}, Neutral: ${neutral}`);
       return { buy, sell, neutral, signal };
     };
 
