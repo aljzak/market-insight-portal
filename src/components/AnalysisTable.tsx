@@ -31,6 +31,15 @@ const AnalysisTable = ({ title, items }: AnalysisTableProps) => {
     }
   };
 
+  if (!items || items.length === 0) {
+    return (
+      <div className="rounded-lg border bg-card p-4">
+        <h3 className="text-lg font-semibold mb-2">{title}</h3>
+        <p className="text-muted-foreground">No data available</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-lg border bg-card">
       <div className="p-4 border-b">
@@ -45,8 +54,8 @@ const AnalysisTable = ({ title, items }: AnalysisTableProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.name}>
+          {items.map((item, index) => (
+            <TableRow key={`${item.name}-${index}`}>
               <TableCell>{item.name}</TableCell>
               <TableCell className="text-right">{item.value.toFixed(2)}</TableCell>
               <TableCell className={`text-right ${getSignalColor(item.signal)}`}>

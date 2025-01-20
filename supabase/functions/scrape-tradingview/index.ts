@@ -16,7 +16,6 @@ serve(async (req) => {
     const { symbol, timeframe } = await req.json();
     console.log(`Scraping data for symbol: ${symbol}, timeframe: ${timeframe}`);
 
-    // Construct the TradingView URL with timeframe
     const url = `https://www.tradingview.com/symbols/${symbol}/technicals/?interval=${timeframe}`;
     console.log(`Fetching from URL: ${url}`);
 
@@ -31,33 +30,31 @@ serve(async (req) => {
     // Function to parse indicator data
     const parseIndicators = (section: string) => {
       const indicators = [];
-      $(`div:contains("${section}")`)
-        .closest('table')
-        .find('tr')
-        .each((_, row) => {
-          const name = $(row).find('td:first-child').text().trim();
-          const value = parseFloat($(row).find('td:nth-child(2)').text().trim()) || 0;
-          const signal = $(row).find('td:last-child').text().toLowerCase().trim();
-          
-          if (name && (signal === 'buy' || signal === 'sell' || signal === 'neutral')) {
-            indicators.push({ name, value, signal });
-          }
-        });
+      const table = $(`div:contains("${section}")`).next('table');
+      
+      table.find('tr').each((_, row) => {
+        const name = $(row).find('td:first-child').text().trim();
+        const valueText = $(row).find('td:nth-child(2)').text().trim();
+        const value = parseFloat(valueText) || 0;
+        const signal = $(row).find('td:last-child').text().toLowerCase().trim();
+        
+        if (name && (signal === 'buy' || signal === 'sell' || signal === 'neutral')) {
+          indicators.push({ name, value, signal });
+        }
+      });
       return indicators;
     };
 
     // Get counts for each section
     const getCounts = (section: string) => {
-      const buy = $(section).find('.buy').length;
-      const sell = $(section).find('.sell').length;
-      const neutral = $(section).find('.neutral').length;
+      const table = $(`div:contains("${section}")`).next('table');
+      const buy = table.find('.buy, .strongBuy').length;
+      const sell = table.find('.sell, .strongSell').length;
+      const neutral = table.find('.neutral').length;
       
-      // Determine signal based on counts
-      let signal = 'Neutral';
-      if (buy > sell && buy > neutral) signal = 'Buy';
-      if (sell > buy && sell > neutral) signal = 'Sell';
-      if (buy >= sell * 2) signal = 'Strong Buy';
-      if (sell >= buy * 2) signal = 'Strong Sell';
+      let signal = 'neutral';
+      if (buy > sell && buy > neutral) signal = 'buy';
+      if (sell > buy && sell > neutral) signal = 'sell';
 
       return { buy, sell, neutral, signal };
     };
@@ -65,17 +62,20 @@ serve(async (req) => {
     const oscillatorsData = parseIndicators('Oscillators');
     const movingAveragesData = parseIndicators('Moving Averages');
 
+    console.log('Oscillators data:', oscillatorsData);
+    console.log('Moving Averages data:', movingAveragesData);
+
     const technicalData = {
       oscillators: {
-        ...getCounts('.oscillators-data'),
+        ...getCounts('Oscillators'),
         indicators: oscillatorsData
       },
       movingAverages: {
-        ...getCounts('.moving-averages-data'),
+        ...getCounts('Moving Averages'),
         indicators: movingAveragesData
       },
       summary: {
-        ...getCounts('.summary-data')
+        ...getCounts('Summary')
       }
     };
 
