@@ -16,8 +16,8 @@ serve(async (req) => {
     const { symbol, timeframe } = await req.json();
     console.log(`Scraping data for symbol: ${symbol}, timeframe: ${timeframe}`);
 
-    // Construct the TradingView URL
-    const url = `https://www.tradingview.com/symbols/${symbol}/technicals/`;
+    // Construct the TradingView URL with timeframe
+    const url = `https://www.tradingview.com/symbols/${symbol}/technicals/?exchange=BINANCE&interval=${timeframe}`;
     console.log(`Fetching from URL: ${url}`);
 
     // Fetch the page content

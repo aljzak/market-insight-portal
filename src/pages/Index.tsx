@@ -16,9 +16,10 @@ const Index = () => {
   const [timeframe, setTimeframe] = useState('1d');
   const { toast } = useToast();
 
-  const { data: technicalData, isLoading: isTechnicalLoading } = useQuery({
+  const { data: technicalData, isLoading: isTechnicalLoading, refetch: refetchTechnical } = useQuery({
     queryKey: ['technical', symbol, timeframe],
     queryFn: async () => {
+      console.log(`Fetching technical data for ${symbol} with timeframe ${timeframe}`);
       const { data, error } = await supabase.functions.invoke('scrape-tradingview', {
         body: { symbol, timeframe }
       });
@@ -42,7 +43,9 @@ const Index = () => {
   };
 
   const handleTimeframeChange = (newTimeframe: string) => {
+    console.log(`Changing timeframe to ${newTimeframe}`);
     setTimeframe(newTimeframe);
+    refetchTechnical(); // Explicitly refetch technical data when timeframe changes
     toast({
       title: "Timeframe Updated",
       description: `Switched to ${newTimeframe.toUpperCase()} timeframe`,
