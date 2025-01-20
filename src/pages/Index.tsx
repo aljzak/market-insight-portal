@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import SymbolSearch from '@/components/SymbolSearch';
 import TimeframeSelector from '@/components/TimeframeSelector';
@@ -6,6 +6,8 @@ import PriceChart from '@/components/PriceChart';
 import AnalysisGauge from '@/components/AnalysisGauge';
 import AnalysisTable from '@/components/AnalysisTable';
 import TechnicalIndicators from '@/components/TechnicalIndicators';
+import TopMenu from '@/components/TopMenu';
+import Footer from '@/components/Footer';
 import { getFundamentalAnalysis } from '@/services/gemini';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -34,6 +36,16 @@ const Index = () => {
     queryFn: () => getFundamentalAnalysis(symbol)
   });
 
+  const { data: priceData } = useQuery({
+    queryKey: ['price', symbol],
+    queryFn: async () => {
+      const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+      const data = await response.json();
+      return parseFloat(data.price);
+    },
+    refetchInterval: 10000 // Refresh every 10 seconds
+  });
+
   const handleSearch = (newSymbol: string) => {
     setSymbol(newSymbol);
     toast({
@@ -45,7 +57,7 @@ const Index = () => {
   const handleTimeframeChange = (newTimeframe: string) => {
     console.log(`Changing timeframe to ${newTimeframe}`);
     setTimeframe(newTimeframe);
-    refetchTechnical(); // Explicitly refetch technical data when timeframe changes
+    refetchTechnical();
     toast({
       title: "Timeframe Updated",
       description: `Switched to ${newTimeframe.toUpperCase()} timeframe`,
@@ -54,29 +66,27 @@ const Index = () => {
 
   if (isTechnicalLoading || isFundamentalLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-lg">Loading analysis...</div>
+      <div className="min-h-screen bg-[#1A1F2C] flex flex-col">
+        <TopMenu symbol={symbol} price={priceData} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-pulse text-lg text-white">Loading analysis...</div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <SymbolSearch onSearch={handleSearch} />
-          <TimeframeSelector
-            selectedTimeframe={timeframe}
-            onTimeframeChange={handleTimeframeChange}
-          />
-        </div>
-
-        <div className="grid gap-6">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold">{symbol}</h2>
-            <p className="text-muted-foreground">
-              Technical Analysis - {timeframe.toUpperCase()} Timeframe
-            </p>
+    <div className="min-h-screen bg-[#1A1F2C] flex flex-col text-white">
+      <TopMenu symbol={symbol} price={priceData} />
+      <div className="flex-1 p-4 md:p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <SymbolSearch onSearch={handleSearch} />
+            <TimeframeSelector
+              selectedTimeframe={timeframe}
+              onTimeframeChange={handleTimeframeChange}
+            />
           </div>
 
           {technicalData && (
@@ -169,6 +179,7 @@ const Index = () => {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
