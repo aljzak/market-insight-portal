@@ -124,35 +124,11 @@ const Index = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <AnalysisTable 
                   title="Oscillators" 
-                  items={[
-                    // We'll need to update this with actual data from the scraping
-                    { name: 'RSI (14)', value: 0, signal: 'neutral' as const },
-                    { name: 'Stochastic %K (14, 3, 3)', value: 0, signal: 'neutral' as const },
-                    { name: 'CCI (20)', value: 0, signal: 'neutral' as const },
-                    { name: 'ADX (14)', value: 0, signal: 'neutral' as const },
-                    { name: 'AO', value: 0, signal: 'neutral' as const },
-                    { name: 'Momentum (10)', value: 0, signal: 'neutral' as const },
-                    { name: 'MACD Level (12, 26)', value: 0, signal: 'neutral' as const },
-                    { name: 'Stochastic RSI Fast (3, 3, 14, 14)', value: 0, signal: 'neutral' as const },
-                    { name: 'Williams %R (14)', value: 0, signal: 'neutral' as const },
-                    { name: 'Bull Bear Power', value: 0, signal: 'neutral' as const }
-                  ]} 
+                  items={technicalData.oscillators.indicators || []} 
                 />
                 <AnalysisTable 
                   title="Moving Averages" 
-                  items={[
-                    // We'll need to update this with actual data from the scraping
-                    { name: 'EMA 10', value: 0, signal: 'neutral' as const },
-                    { name: 'SMA 10', value: 0, signal: 'neutral' as const },
-                    { name: 'EMA 20', value: 0, signal: 'neutral' as const },
-                    { name: 'SMA 20', value: 0, signal: 'neutral' as const },
-                    { name: 'EMA 30', value: 0, signal: 'neutral' as const },
-                    { name: 'SMA 30', value: 0, signal: 'neutral' as const },
-                    { name: 'EMA 50', value: 0, signal: 'neutral' as const },
-                    { name: 'SMA 50', value: 0, signal: 'neutral' as const },
-                    { name: 'EMA 100', value: 0, signal: 'neutral' as const },
-                    { name: 'SMA 100', value: 0, signal: 'neutral' as const }
-                  ]} 
+                  items={technicalData.movingAverages.indicators || []} 
                 />
               </div>
             </>
