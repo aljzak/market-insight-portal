@@ -24,12 +24,6 @@ export default defineConfig(({ mode }) => ({
   build: {
     commonjsOptions: {
       include: []
-    },
-    rollupOptions: {
-      external: [
-        '/charting_library/charting_library.standalone.js',
-        '/datafeeds/udf/dist/bundle.js'
-      ]
     }
   }
 }));

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { widget } from '../types/tradingview';
+import { widget } from '@/types/tradingview';
 
 interface TradingViewChartProps {
   symbol: string;
