@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ChartingLibraryWidgetOptions } from '@/types/tradingview';
 
 interface TradingViewChartProps {
@@ -26,7 +26,7 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
         enabled_features: ['study_templates'],
         charts_storage_url: 'https://saveload.tradingview.com',
         charts_storage_api_version: '1.1',
-        client_id: 'tradingview.com',
+        client_id: 'depin-crypto.info',
         user_id: 'public_user_id',
         fullscreen: false,
         autosize: true,
