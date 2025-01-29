@@ -1,4 +1,4 @@
-declare module '../../../public/charting_library/charting_library' {
+declare module '../../../public/charting_library/charting_library.standalone' {
   export interface ChartingLibraryWidgetOptions {
     symbol: string;
     interval: string;
