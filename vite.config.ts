@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      jsxImportSource: "react"
+      jsxImportSource: "@emotion/react"
     }),
     mode === 'development' &&
     componentTagger(),
@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-    },
+    }
   },
   optimizeDeps: {
     exclude: ['charting_library']
