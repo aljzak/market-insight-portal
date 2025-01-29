@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { widget } from '@/types/tradingview';
+import { ChartingLibraryWidgetOptions, widget } from '../types/tradingview';
 
 interface TradingViewChartProps {
   symbol: string;
@@ -23,7 +23,7 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
 
     console.log('Initializing TradingView chart with:', { symbol, interval });
 
-    const widgetOptions = {
+    const widgetOptions: ChartingLibraryWidgetOptions = {
       symbol: symbol,
       datafeed: new window.Datafeeds.UDFCompatibleDatafeed('https://demo_feed.tradingview.com'),
       interval: interval,
