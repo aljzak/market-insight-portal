@@ -19,7 +19,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, interval = 
         symbol: symbol,
         datafeed: new window.Datafeeds.UDFCompatibleDatafeed('https://demo_feed.tradingview.com'),
         interval: interval,
-        container: containerRef.current,
+        container: containerRef.current!,
         library_path: '/charting_library/',
         locale: 'en',
         disabled_features: ['use_localstorage_for_settings'],
@@ -61,10 +61,11 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, interval = 
     }
   }, [symbol, interval]);
 
-  return (
-    <div className="w-full h-[600px] relative">
-      <div ref={containerRef} className="absolute inset-0" />
-    </div>
+  return React.createElement('div', { className: "w-full h-[600px] relative" },
+    React.createElement('div', {
+      ref: containerRef,
+      className: "absolute inset-0"
+    })
   );
 };
 
