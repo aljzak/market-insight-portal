@@ -1,6 +1,7 @@
+import * as React from 'react';
 import TradingViewChart from './components/TradingViewChart';
 
-const App = () => {
+const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <h1 className="text-2xl font-bold mb-4">TradingView Chart</h1>

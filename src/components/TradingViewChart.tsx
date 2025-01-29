@@ -46,7 +46,6 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, interval = 
       }
     };
 
-    // Wait for TradingView library to be loaded
     if (window.TradingView && window.Datafeeds) {
       initChart();
     } else {
@@ -61,11 +60,10 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, interval = 
     }
   }, [symbol, interval]);
 
-  return React.createElement('div', { className: "w-full h-[600px] relative" },
-    React.createElement('div', {
-      ref: containerRef,
-      className: "absolute inset-0"
-    })
+  return (
+    <div className="w-full h-[600px] relative">
+      <div ref={containerRef} className="absolute inset-0" />
+    </div>
   );
 };
 
