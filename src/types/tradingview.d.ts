@@ -22,7 +22,7 @@ export interface ChartingLibraryWidgetOptions {
   };
 }
 
-export class widget {
+export declare class widget {
   constructor(options: ChartingLibraryWidgetOptions);
   remove(): void;
 }
