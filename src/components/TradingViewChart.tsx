@@ -6,6 +6,15 @@ interface TradingViewChartProps {
   interval?: string;
 }
 
+declare global {
+  interface Window {
+    TradingView: any;
+    Datafeeds: {
+      UDFCompatibleDatafeed: new (url: string) => any;
+    };
+  }
+}
+
 const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -16,13 +25,18 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
 
     const widgetOptions = {
       symbol: symbol,
-      datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed('https://demo_feed.tradingview.com'),
+      datafeed: new window.Datafeeds.UDFCompatibleDatafeed('https://demo_feed.tradingview.com'),
       interval: interval,
       container: containerRef.current,
       library_path: '/charting_library/',
       locale: 'en',
       disabled_features: ['use_localstorage_for_settings'],
-      enabled_features: ['study_templates'],
+      enabled_features: [
+        'study_templates',
+        'drawing_templates',
+        'multiple_charts_layout',
+        'symbol_search_hot_key'
+      ],
       charts_storage_url: 'https://saveload.tradingview.com',
       charts_storage_api_version: '1.1',
       client_id: 'tradingview.com',
@@ -31,6 +45,16 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
       autosize: true,
       studies_overrides: {},
       theme: 'Dark' as const,
+      toolbar_bg: '#1A1F2C',
+      loading_screen: { backgroundColor: "#1A1F2C" },
+      overrides: {
+        "mainSeriesProperties.candleStyle.upColor": "#00C805",
+        "mainSeriesProperties.candleStyle.downColor": "#FF1744",
+        "mainSeriesProperties.candleStyle.borderUpColor": "#00C805",
+        "mainSeriesProperties.candleStyle.borderDownColor": "#FF1744",
+        "mainSeriesProperties.candleStyle.wickUpColor": "#00C805",
+        "mainSeriesProperties.candleStyle.wickDownColor": "#FF1744",
+      }
     };
 
     try {

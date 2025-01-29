@@ -19,4 +19,12 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      external: [
+        '/charting_library/charting_library.standalone.js',
+        '/datafeeds/udf/dist/bundle.js'
+      ]
+    }
+  }
 }));

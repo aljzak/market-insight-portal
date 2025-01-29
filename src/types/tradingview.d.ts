@@ -16,6 +16,11 @@ declare module '@/charting_library/charting_library' {
     autosize?: boolean;
     studies_overrides?: object;
     theme?: "Light" | "Dark";
+    toolbar_bg?: string;
+    loading_screen?: { backgroundColor: string };
+    overrides?: {
+      [key: string]: string | number | boolean;
+    };
   }
 
   export class widget {
@@ -25,6 +30,7 @@ declare module '@/charting_library/charting_library' {
 }
 
 interface Window {
+  TradingView: any;
   Datafeeds: {
     UDFCompatibleDatafeed: new (url: string) => any;
   };
