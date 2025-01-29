@@ -1,25 +1,28 @@
-import React, { useEffect, useRef } from 'react';
-import { ChartingLibraryWidgetOptions, widget } from '../types/tradingview';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChartingLibraryWidgetOptions } from '../types/tradingview';
 
 interface TradingViewChartProps {
   symbol: string;
   interval?: string;
 }
 
-declare global {
-  interface Window {
-    TradingView: any;
-    Datafeeds: {
-      UDFCompatibleDatafeed: new (url: string) => any;
-    };
-  }
-}
-
 const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [librariesLoaded, setLibrariesLoaded] = useState(false);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const checkLibraries = () => {
+      if (window.TradingView && window.Datafeeds) {
+        setLibrariesLoaded(true);
+      } else {
+        setTimeout(checkLibraries, 100);
+      }
+    };
+    checkLibraries();
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current || !librariesLoaded) return;
 
     console.log('Initializing TradingView chart with:', { symbol, interval });
 
@@ -58,7 +61,7 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
     };
 
     try {
-      const tvWidget = new widget(widgetOptions);
+      const tvWidget = new window.TradingView.widget(widgetOptions);
       console.log('TradingView widget initialized successfully');
 
       return () => {
@@ -68,7 +71,7 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
     } catch (error) {
       console.error('Error initializing TradingView widget:', error);
     }
-  }, [symbol, interval]);
+  }, [symbol, interval, librariesLoaded]);
 
   return (
     <div className="w-full h-[600px] relative">
