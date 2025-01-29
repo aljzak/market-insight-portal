@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import type { ChartingLibraryWidgetOptions } from '@/types/tradingview';
 
 interface TradingViewChartProps {
@@ -6,7 +6,7 @@ interface TradingViewChartProps {
   interval?: string;
 }
 
-const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => {
+const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, interval = 'D' }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
