@@ -1,11 +1,10 @@
 import React from 'react';
-import TradingViewChart from '@/components/TradingViewChart';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-[#1A1F2C] p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
-        <TradingViewChart symbol="BTCUSDT" />
+        <h1 className="text-4xl font-bold text-foreground">Welcome to your new project</h1>
       </div>
     </div>
   );

@@ -17,19 +17,5 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     }
-  },
-  optimizeDeps: {
-    exclude: ['charting_library']
-  },
-  build: {
-    commonjsOptions: {
-      include: []
-    },
-    rollupOptions: {
-      external: [
-        '/charting_library/charting_library.standalone.js',
-        '/datafeeds/udf/dist/bundle.js'
-      ]
-    }
   }
 }));
