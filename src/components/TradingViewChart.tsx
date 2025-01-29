@@ -30,7 +30,7 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
       fullscreen: false,
       autosize: true,
       studies_overrides: {},
-      theme: 'Dark',
+      theme: 'Dark' as const,
     };
 
     try {
