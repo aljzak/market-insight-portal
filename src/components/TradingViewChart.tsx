@@ -1,9 +1,18 @@
 import React, { useEffect, useRef } from 'react';
-import { widget } from '../../../public/charting_library/charting_library.standalone';
+import { widget } from '../types/tradingview';
 
 interface TradingViewChartProps {
   symbol: string;
   interval?: string;
+}
+
+declare global {
+  interface Window {
+    TradingView: any;
+    Datafeeds: {
+      UDFCompatibleDatafeed: new (url: string) => any;
+    };
+  }
 }
 
 const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => {
