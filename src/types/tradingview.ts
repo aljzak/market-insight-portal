@@ -22,20 +22,15 @@ export interface ChartingLibraryWidgetOptions {
   };
 }
 
-export interface IWidget {
-  constructor(options: ChartingLibraryWidgetOptions): void;
-  remove(): void;
-}
-
 declare global {
   interface Window {
     TradingView: {
-      widget: IWidget;
+      widget: new (options: ChartingLibraryWidgetOptions) => {
+        remove(): void;
+      };
     };
     Datafeeds: {
       UDFCompatibleDatafeed: new (url: string) => any;
     };
   }
 }
-
-export const widget = window.TradingView?.widget;
