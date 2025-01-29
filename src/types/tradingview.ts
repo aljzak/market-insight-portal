@@ -1,4 +1,4 @@
-export interface ChartingLibraryWidgetOptions {
+interface ChartingLibraryWidgetOptions {
   symbol: string;
   interval: string;
   datafeed: any;
@@ -13,13 +13,7 @@ export interface ChartingLibraryWidgetOptions {
   user_id?: string;
   fullscreen?: boolean;
   autosize?: boolean;
-  studies_overrides?: object;
   theme?: "Light" | "Dark";
-  toolbar_bg?: string;
-  loading_screen?: { backgroundColor: string };
-  overrides?: {
-    [key: string]: string | number | boolean;
-  };
 }
 
 declare global {
@@ -34,3 +28,5 @@ declare global {
     };
   }
 }
+
+export type { ChartingLibraryWidgetOptions };
