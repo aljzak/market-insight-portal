@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      jsxImportSource: 'react'
+      jsxImportSource: '@emotion/react',
+      jsxRuntime: 'automatic'
     }),
     mode === 'development' &&
     componentTagger(),
