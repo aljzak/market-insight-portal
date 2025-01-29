@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import SymbolSearch from '@/components/SymbolSearch';
 import TimeframeSelector from '@/components/TimeframeSelector';
-import PriceChart from '@/components/PriceChart';
+import TradingViewChart from '@/components/TradingViewChart';
 import AnalysisGauge from '@/components/AnalysisGauge';
 import AnalysisTable from '@/components/AnalysisTable';
-import TechnicalIndicators from '@/components/TechnicalIndicators';
 import TopMenu from '@/components/TopMenu';
 import Footer from '@/components/Footer';
 import { getFundamentalAnalysis } from '@/services/gemini';
@@ -43,7 +42,7 @@ const Index = () => {
       const data = await response.json();
       return parseFloat(data.price);
     },
-    refetchInterval: 10000 // Refresh every 10 seconds
+    refetchInterval: 10000
   });
 
   const handleSearch = (newSymbol: string) => {
@@ -88,6 +87,15 @@ const Index = () => {
               onTimeframeChange={handleTimeframeChange}
             />
           </div>
+
+          <Card className="w-full bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <CardHeader>
+              <CardTitle>Chart</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TradingViewChart symbol={symbol} interval={timeframe} />
+            </CardContent>
+          </Card>
 
           {technicalData && (
             <>
