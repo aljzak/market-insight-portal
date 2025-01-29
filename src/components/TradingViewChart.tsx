@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { widget } from '../charting_library/charting_library';
+import { widget } from '@/charting_library/charting_library';
 
 interface TradingViewChartProps {
   symbol: string;
@@ -11,6 +11,8 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
 
   useEffect(() => {
     if (!containerRef.current) return;
+
+    console.log('Initializing TradingView chart with:', { symbol, interval });
 
     const widgetOptions = {
       symbol: symbol,
@@ -31,11 +33,17 @@ const TradingViewChart = ({ symbol, interval = 'D' }: TradingViewChartProps) => 
       theme: 'Dark',
     };
 
-    const tvWidget = new widget(widgetOptions);
+    try {
+      const tvWidget = new widget(widgetOptions);
+      console.log('TradingView widget initialized successfully');
 
-    return () => {
-      tvWidget.remove();
-    };
+      return () => {
+        console.log('Cleaning up TradingView widget');
+        tvWidget.remove();
+      };
+    } catch (error) {
+      console.error('Error initializing TradingView widget:', error);
+    }
   }, [symbol, interval]);
 
   return (
